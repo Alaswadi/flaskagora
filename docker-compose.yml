@@ -27,6 +27,7 @@ services:
       start_period: 40s
 
   # Optional: Add nginx reverse proxy for production
+  # NOTE: For Coolify deployments, disable this as Coolify handles the proxy
   nginx:
     image: nginx:alpine
     container_name: agora-nginx
@@ -42,7 +43,7 @@ services:
     networks:
       - agora-network
     profiles:
-      - production  # Only start with --profile production
+      - nginx-production  # Changed profile name to avoid conflicts with Coolify
     environment:
       - NGINX_HOST=${NGINX_HOST:-localhost}
       - NGINX_PORT=${NGINX_PORT:-80}

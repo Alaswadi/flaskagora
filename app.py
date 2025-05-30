@@ -60,6 +60,22 @@ def index():
     """Homepage - Welcome to IT Consultation Platform"""
     return render_template('index.html')
 
+@app.route('/health')
+def health():
+    """Health check endpoint for Coolify"""
+    return jsonify({
+        'status': 'healthy',
+        'service': 'IT Consultation Platform',
+        'version': '1.0.0',
+        'proxy_headers': {
+            'X-Forwarded-Proto': request.headers.get('X-Forwarded-Proto'),
+            'X-Forwarded-Host': request.headers.get('X-Forwarded-Host'),
+            'Host': request.headers.get('Host')
+        },
+        'is_secure': request.is_secure,
+        'url': request.url
+    })
+
 @app.route('/room')
 def room():
     """Consultation Room - Video call interface"""
