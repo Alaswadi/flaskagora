@@ -2,27 +2,47 @@ from flask import Flask, render_template, request, jsonify
 import time
 import random
 import string
+import os
 
 app = Flask(__name__)
 
 # Agora.io Configuration
-try:
-    # Try to import from config.py file
-    from config import AGORA_APP_ID, AGORA_APP_CERTIFICATE, TOKEN_EXPIRATION_TIME
-    AGORA_CONFIG = {
-        'APP_ID': AGORA_APP_ID,
-        'APP_CERTIFICATE': AGORA_APP_CERTIFICATE,
-        'TOKEN_EXPIRATION_TIME': TOKEN_EXPIRATION_TIME
-    }
-    print("✅ Loaded Agora configuration from config.py")
-except ImportError:
-    # Fallback to placeholder values
-    AGORA_CONFIG = {
+def load_agora_config():
+    """Load Agora configuration from environment variables, config.py, or defaults"""
+
+    # Priority 1: Environment variables (Docker/production)
+    if os.getenv('AGORA_APP_ID'):
+        config = {
+            'APP_ID': os.getenv('AGORA_APP_ID'),
+            'APP_CERTIFICATE': os.getenv('AGORA_APP_CERTIFICATE'),
+            'TOKEN_EXPIRATION_TIME': int(os.getenv('TOKEN_EXPIRATION_TIME', 3600))
+        }
+        print("✅ Loaded Agora configuration from environment variables")
+        return config
+
+    # Priority 2: config.py file (local development)
+    try:
+        from config import AGORA_APP_ID, AGORA_APP_CERTIFICATE, TOKEN_EXPIRATION_TIME
+        config = {
+            'APP_ID': AGORA_APP_ID,
+            'APP_CERTIFICATE': AGORA_APP_CERTIFICATE,
+            'TOKEN_EXPIRATION_TIME': TOKEN_EXPIRATION_TIME
+        }
+        print("✅ Loaded Agora configuration from config.py")
+        return config
+    except ImportError:
+        pass
+
+    # Priority 3: Fallback to hardcoded values
+    config = {
         'APP_ID': 'f3657d780c174dd2a7f9f7394548feee',  # Your actual App ID
         'APP_CERTIFICATE': '3925aa83f68c4c80b333a7b5ef5c0a87',  # Your actual Primary Certificate
         'TOKEN_EXPIRATION_TIME': 3600  # Token expires in 1 hour
     }
-    print("⚠️  Using placeholder Agora configuration. Create config.py with your credentials.")
+    print("⚠️  Using hardcoded Agora configuration. Set environment variables or create config.py")
+    return config
+
+AGORA_CONFIG = load_agora_config()
 
 @app.route('/')
 def index():
@@ -97,4 +117,13 @@ def get_token():
         }), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    # Configuration for Docker and production
+    debug_mode = os.getenv('FLASK_ENV', 'development') == 'development'
+    host = os.getenv('HOST', '0.0.0.0')
+    port = int(os.getenv('PORT', 5000))
+
+    print(f"🚀 Starting IT Consultation Platform on {host}:{port}")
+    print(f"📊 Debug mode: {debug_mode}")
+    print(f"🔑 App ID: {AGORA_CONFIG['APP_ID']}")
+
+    app.run(debug=debug_mode, host=host, port=port)

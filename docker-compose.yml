@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  flaskagora:
+    build: .
+    container_name: it-consultation-platform
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+      - FLASK_APP=app.py
+      # Agora configuration (can be overridden with .env file)
+      - AGORA_APP_ID=${AGORA_APP_ID:-f3657d780c174dd2a7f9f7394548feee}
+      - AGORA_APP_CERTIFICATE=${AGORA_APP_CERTIFICATE:-3925aa83f68c4c80b333a7b5ef5c0a87}
+      - TOKEN_EXPIRATION_TIME=${TOKEN_EXPIRATION_TIME:-3600}
+    volumes:
+      # Mount source code for development (comment out for production)
+      - .:/app
+    restart: unless-stopped
+    networks:
+      - agora-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:5000/api/token?channel=health-check')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Optional: Add nginx reverse proxy for production
+  nginx:
+    image: nginx:alpine
+    container_name: agora-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro  # For SSL certificates
+    depends_on:
+      - flaskagora
+    restart: unless-stopped
+    networks:
+      - agora-network
+    profiles:
+      - production  # Only start with --profile production
+
+networks:
+  agora-network:
+    driver: bridge
+
+volumes:
+  ssl-certs:
+    driver: local
