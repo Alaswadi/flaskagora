@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consultation Room - {{ room_name }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <!-- Agora.io SDK -->
+    <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.19.0.js"></script>
+</head>
+<body>
+    <div class="room-container">
+        <header class="room-header">
+            <h1>IT Consultation Room: {{ room_name }}</h1>
+            <div class="room-info">
+                <span class="status">Status: <span id="connection-status">Connecting...</span></span>
+            </div>
+        </header>
+
+        <main class="video-area">
+            <!-- Local Video Stream Container -->
+            <div class="video-section">
+                <div class="local-video-container">
+                    <h3>Your Video</h3>
+                    <div id="local-video" class="video-placeholder">
+                        <!-- Agora local video stream will be rendered here -->
+                        <p>Local video stream placeholder</p>
+                        <p>Camera will appear here</p>
+                    </div>
+                    <div class="video-controls">
+                        <button id="toggle-camera" class="btn-control">📹 Camera</button>
+                        <button id="toggle-microphone" class="btn-control">🎤 Microphone</button>
+                    </div>
+                </div>
+
+                <!-- Remote Video Streams Container -->
+                <div class="remote-video-container">
+                    <h3>Consultant/Participant Video</h3>
+                    <div id="remote-videos" class="remote-video-grid">
+                        <!-- Agora remote video streams will be rendered here -->
+                        <div class="video-placeholder remote-placeholder">
+                            <p>Waiting for other participants...</p>
+                            <p>Remote video streams will appear here</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Call Controls -->
+            <div class="call-controls">
+                <button id="test-camera" class="btn-secondary">Test Camera</button>
+                <button id="join-call" class="btn-primary">Join Call</button>
+                <button id="leave-call" class="btn-danger">Leave Room</button>
+                <button id="share-screen" class="btn-secondary">Share Screen</button>
+            </div>
+
+            <!-- Room Information -->
+            <div class="room-details">
+                <h4>Room Details</h4>
+                <p><strong>Room Name:</strong> {{ room_name }}</p>
+                <p><strong>Participants:</strong> <span id="participant-count">0</span></p>
+                <!-- Agora connection info will be displayed here -->
+                <div id="agora-info" style="display: none;">
+                    <p><strong>App ID:</strong> <span id="app-id">Will be loaded from config</span></p>
+                    <p><strong>Channel:</strong> <span id="channel-name">{{ room_name }}</span></p>
+                </div>
+            </div>
+        </main>
+
+        <footer class="room-footer">
+            <a href="/" class="btn-link">← Back to Homepage</a>
+        </footer>
+    </div>
+
+    <!-- JavaScript for Agora.io integration -->
+    <script src="{{ url_for('static', filename='agora-logic.js') }}"></script>
+
+    <script>
+        // Initialize room when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Room page loaded for:', '{{ room_name }}');
+
+            // Update connection status
+            document.getElementById('connection-status').textContent = 'Ready to connect';
+
+            // Set up basic event listeners for UI controls
+            setupBasicControls();
+
+            // Initialize Agora SDK
+            initializeAgora('{{ room_name }}');
+
+            // Safety check: Restore placeholder if video container becomes empty
+            setTimeout(() => {
+                const localVideoDiv = document.getElementById('local-video');
+                if (localVideoDiv && localVideoDiv.innerHTML.trim() === '') {
+                    console.warn('Local video container is empty, restoring placeholder');
+                    localVideoDiv.innerHTML = '<p>Local video stream placeholder</p><p>Camera will appear here</p>';
+                    localVideoDiv.style.backgroundColor = '#e9ecef';
+                }
+            }, 2000);
+        });
+
+        function setupBasicControls() {
+            // Leave room button
+            document.getElementById('leave-call').addEventListener('click', async function() {
+                if (confirm('Are you sure you want to leave the consultation room?')) {
+                    // Leave Agora channel before redirecting
+                    if (typeof leaveChannel === 'function') {
+                        await leaveChannel();
+                    }
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 1000); // Give time for cleanup
+                }
+            });
+
+            // Join call button
+            document.getElementById('join-call').addEventListener('click', function() {
+                console.log('Join call clicked');
+                this.textContent = 'Connecting...';
+                this.disabled = true;
+
+                // Call Agora join function
+                if (typeof joinChannel === 'function') {
+                    joinChannel();
+                } else {
+                    console.log('joinChannel function not available - Agora SDK needed');
+                    setTimeout(() => {
+                        this.textContent = 'Connected (Demo)';
+                        document.getElementById('connection-status').textContent = 'Connected (Demo Mode)';
+                    }, 1000);
+                }
+            });
+
+            // Camera toggle
+            document.getElementById('toggle-camera').addEventListener('click', function() {
+                if (typeof toggleCamera === 'function') {
+                    toggleCamera();
+                } else {
+                    console.log('toggleCamera function not available - Agora SDK needed');
+                }
+            });
+
+            // Microphone toggle
+            document.getElementById('toggle-microphone').addEventListener('click', function() {
+                if (typeof toggleMicrophone === 'function') {
+                    toggleMicrophone();
+                } else {
+                    console.log('toggleMicrophone function not available - Agora SDK needed');
+                }
+            });
+
+            // Test camera button
+            document.getElementById('test-camera').addEventListener('click', async function() {
+                console.log('Test camera clicked');
+                this.textContent = 'Testing...';
+                this.disabled = true;
+
+                try {
+                    await testCameraAccess();
+                    this.textContent = 'Camera Test Passed ✓';
+                    this.style.backgroundColor = '#28a745';
+                } catch (error) {
+                    this.textContent = 'Camera Test Failed ✗';
+                    this.style.backgroundColor = '#dc3545';
+                    console.error('Camera test failed:', error);
+                }
+
+                setTimeout(() => {
+                    this.textContent = 'Test Camera';
+                    this.style.backgroundColor = '#6c757d';
+                    this.disabled = false;
+                }, 3000);
+            });
+
+            // Screen share
+            document.getElementById('share-screen').addEventListener('click', function() {
+                console.log('Screen share clicked');
+                // TODO: Implement Agora screen sharing
+                alert('Screen sharing will be implemented with Agora SDK integration');
+            });
+        }
+    </script>
+</body>
+</html>

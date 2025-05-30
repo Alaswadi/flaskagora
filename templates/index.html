@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IT Consultation Platform</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>IT Consultation Platform</h1>
+            <p class="subtitle">Connect with IT experts through video consultations</p>
+        </header>
+
+        <main>
+            <div class="welcome-section">
+                <h2>Welcome to Your IT Consultation Hub</h2>
+                <p>Get expert IT advice and support through our secure video consultation platform.</p>
+                
+                <div class="room-access">
+                    <h3>Start or Join a Consultation</h3>
+                    <form action="/room" method="GET" class="room-form">
+                        <div class="input-group">
+                            <label for="room">Room Name:</label>
+                            <input type="text" id="room" name="room" placeholder="Enter room name (e.g., consultation-123)" value="test-room">
+                        </div>
+                        <button type="submit" class="btn-primary">Create/Join Consultation Room</button>
+                    </form>
+                </div>
+
+                <div class="features">
+                    <h3>Platform Features</h3>
+                    <ul>
+                        <li>High-quality video and audio calls</li>
+                        <li>Screen sharing capabilities</li>
+                        <li>Secure and private consultations</li>
+                        <li>Easy room creation and joining</li>
+                    </ul>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>&copy; 2024 IT Consultation Platform - MVP Version</p>
+        </footer>
+    </div>
+</body>
+</html>

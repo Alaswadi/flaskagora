@@ -1,0 +1,328 @@
+/* IT Consultation Platform - Basic Styles */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background-color: #f4f4f4;
+}
+
+/* Homepage Styles */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: white;
+    min-height: 100vh;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+header {
+    text-align: center;
+    margin-bottom: 40px;
+    padding: 20px 0;
+    border-bottom: 2px solid #007bff;
+}
+
+header h1 {
+    color: #007bff;
+    font-size: 2.5em;
+    margin-bottom: 10px;
+}
+
+.subtitle {
+    color: #666;
+    font-size: 1.2em;
+}
+
+.welcome-section {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.welcome-section h2 {
+    color: #333;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.room-access {
+    background-color: #f8f9fa;
+    padding: 30px;
+    border-radius: 8px;
+    margin: 30px 0;
+    text-align: center;
+}
+
+.room-form {
+    margin-top: 20px;
+}
+
+.input-group {
+    margin-bottom: 20px;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.input-group input {
+    width: 100%;
+    max-width: 300px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+.features {
+    margin-top: 40px;
+}
+
+.features ul {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.features li {
+    background-color: #e9ecef;
+    margin: 10px 0;
+    padding: 10px;
+    border-radius: 4px;
+    border-left: 4px solid #007bff;
+}
+
+/* Button Styles */
+.btn-primary {
+    background-color: #007bff;
+    color: white;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+}
+
+.btn-primary:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    color: white;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+.btn-danger:hover {
+    background-color: #c82333;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+.btn-secondary:hover {
+    background-color: #545b62;
+}
+
+.btn-control {
+    background-color: #28a745;
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin: 0 5px;
+    font-size: 14px;
+}
+
+.btn-control:hover {
+    background-color: #218838;
+}
+
+.btn-link {
+    color: #007bff;
+    text-decoration: none;
+    padding: 10px;
+}
+
+.btn-link:hover {
+    text-decoration: underline;
+}
+
+/* Room Page Styles */
+.room-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: white;
+    min-height: 100vh;
+}
+
+.room-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 0;
+    border-bottom: 2px solid #007bff;
+    margin-bottom: 30px;
+}
+
+.room-header h1 {
+    color: #007bff;
+    font-size: 1.8em;
+}
+
+.room-info {
+    color: #666;
+}
+
+.status {
+    font-weight: bold;
+}
+
+.video-area {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.video-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin-bottom: 30px;
+}
+
+.local-video-container,
+.remote-video-container {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    border: 2px solid #dee2e6;
+}
+
+.local-video-container h3,
+.remote-video-container h3 {
+    margin-bottom: 15px;
+    color: #333;
+    text-align: center;
+}
+
+.video-placeholder {
+    background-color: #e9ecef;
+    border: 2px dashed #6c757d;
+    border-radius: 8px;
+    padding: 40px 20px;
+    text-align: center;
+    color: #6c757d;
+    min-height: 300px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.remote-placeholder {
+    min-height: 300px;
+}
+
+.video-controls {
+    margin-top: 15px;
+    text-align: center;
+}
+
+.remote-video-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.call-controls {
+    text-align: center;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+.call-controls button {
+    margin: 0 10px;
+}
+
+.room-details {
+    background-color: #e9ecef;
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 20px;
+}
+
+.room-details h4 {
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.room-footer {
+    text-align: center;
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid #dee2e6;
+}
+
+footer {
+    text-align: center;
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid #dee2e6;
+    color: #666;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .video-section {
+        grid-template-columns: 1fr;
+    }
+    
+    .room-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+    }
+    
+    .call-controls button {
+        display: block;
+        width: 100%;
+        margin: 10px 0;
+    }
+    
+    .container,
+    .room-container {
+        padding: 10px;
+    }
+}
