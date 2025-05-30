@@ -1,0 +1,29 @@
+# Simplified Docker Compose for Coolify deployment
+# This removes nginx and only runs the Flask app
+version: '3.8'
+
+services:
+  flaskagora:
+    build: .
+    container_name: flaskagora
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+      - FLASK_APP=app.py
+      - AGORA_APP_ID=${AGORA_APP_ID:-f3657d780c174dd2a7f9f7394548feee}
+      - AGORA_APP_CERTIFICATE=${AGORA_APP_CERTIFICATE:-3925aa83f68c4c80b333a7b5ef5c0a87}
+      - TOKEN_EXPIRATION_TIME=${TOKEN_EXPIRATION_TIME:-3600}
+    restart: unless-stopped
+    networks:
+      - agora-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:5000/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  agora-network:
+    driver: bridge
