@@ -274,8 +274,23 @@ if __name__ == '__main__':
     host = os.getenv('HOST', '0.0.0.0')
     port = int(os.getenv('PORT', 5000))
 
-    print(f"🚀 Starting IT Consultation Platform on {host}:{port}")
+    print("=" * 60)
+    print("🚀 IT CONSULTATION PLATFORM - STARTING UP")
+    print("=" * 60)
+    print(f"📍 Host: {host}")
+    print(f"🔌 Port: {port}")
     print(f"📊 Debug mode: {debug_mode}")
-    print(f"🔑 App ID: {AGORA_CONFIG['APP_ID']}")
+    print(f"🔑 Agora App ID: {AGORA_CONFIG['APP_ID']}")
+    print(f"🔐 Has Certificate: {bool(AGORA_CONFIG['APP_CERTIFICATE'])}")
+    print(f"🌍 Environment: {os.getenv('FLASK_ENV', 'development')}")
+    print(f"🐳 Container: {os.getenv('COOLIFY_CONTAINER_NAME', 'local')}")
+    print(f"🌐 URL: {os.getenv('COOLIFY_URL', f'http://{host}:{port}')}")
+    print("=" * 60)
 
-    app.run(debug=debug_mode, host=host, port=port)
+    try:
+        app.run(debug=debug_mode, host=host, port=port)
+    except Exception as e:
+        print(f"❌ STARTUP ERROR: {e}")
+        import traceback
+        traceback.print_exc()
+        raise
