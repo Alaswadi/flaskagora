@@ -77,11 +77,22 @@ async function initializeAgora(roomName) {
             return;
         }
 
-        // Check if Agora SDK is available
+        // Check if Agora SDK is available with retry logic
+        let retries = 0;
+        const maxRetries = 10;
+
+        while (typeof AgoraRTC === 'undefined' && retries < maxRetries) {
+            console.log(`Waiting for Agora SDK... (${retries + 1}/${maxRetries})`);
+            updateConnectionStatus(`Loading Agora SDK... (${retries + 1}/${maxRetries})`);
+            await new Promise(resolve => setTimeout(resolve, 500));
+            retries++;
+        }
+
         if (typeof AgoraRTC === 'undefined') {
-            console.error('Agora RTC SDK not loaded');
+            const errorMsg = 'Agora RTC SDK failed to load. Please check your internet connection and refresh the page.';
+            console.error(errorMsg);
             updateConnectionStatus('Agora SDK not loaded');
-            return;
+            throw new Error(errorMsg);
         }
 
         // Log Agora SDK version
@@ -573,14 +584,30 @@ async function checkBrowserSupport() {
 
     // Check if browser supports getUserMedia
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        throw new Error('Browser does not support camera/microphone access');
+        const errorMsg = 'Browser does not support camera/microphone access. Please use a modern browser like Chrome, Firefox, or Safari.';
+        console.error(errorMsg);
+        throw new Error(errorMsg);
     }
 
-    // Check if running on HTTPS or localhost
-    const isSecure = location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+    // Check if running on HTTPS or localhost (more permissive for cloud deployments)
+    const isSecure = location.protocol === 'https:' ||
+                     location.hostname === 'localhost' ||
+                     location.hostname === '127.0.0.1' ||
+                     location.hostname.includes('.app') ||  // Common cloud domains
+                     location.hostname.includes('.dev') ||
+                     location.hostname.includes('.io') ||
+                     location.hostname.includes('.com');
+
     if (!isSecure) {
         console.warn('Camera access may be restricted on non-HTTPS sites');
+        // For cloud deployments, we'll try anyway but warn the user
     }
+
+    console.log('Security context:', {
+        protocol: location.protocol,
+        hostname: location.hostname,
+        isSecure: isSecure
+    });
 
     // Check available devices
     try {
@@ -595,14 +622,18 @@ async function checkBrowserSupport() {
         });
 
         if (!hasCamera) {
-            throw new Error('No camera device found');
+            console.warn('No camera device found during enumeration');
+            // Don't throw error - device enumeration might be restricted
         }
         if (!hasMicrophone) {
-            throw new Error('No microphone device found');
+            console.warn('No microphone device found during enumeration');
+            // Don't throw error - device enumeration might be restricted
         }
 
     } catch (error) {
-        console.warn('Could not enumerate devices:', error);
+        console.warn('Could not enumerate devices (this is normal on some browsers/deployments):', error);
+        // Device enumeration can fail on cloud deployments or due to privacy settings
+        // We'll try to access the camera anyway when joining the call
     }
 }
 

@@ -6,8 +6,43 @@
     <title>Consultation Room - {{ room_name }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
-    <!-- Agora.io SDK -->
-    <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.19.0.js"></script>
+    <!-- Agora.io SDK with fallback -->
+    <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.19.0.js"
+            onerror="console.error('Failed to load Agora SDK from primary CDN'); loadAgoraFallback();"></script>
+    <script>
+        // Fallback function to load Agora SDK from alternative CDN
+        function loadAgoraFallback() {
+            console.log('Loading Agora SDK from fallback CDN...');
+            const script = document.createElement('script');
+            script.src = 'https://unpkg.com/agora-rtc-sdk-ng@4.19.0/AgoraRTC_N.js';
+            script.onerror = function() {
+                console.error('Failed to load Agora SDK from fallback CDN');
+                const localVideoDiv = document.getElementById('local-video');
+                if (localVideoDiv) {
+                    localVideoDiv.innerHTML = `
+                        <div style="padding: 20px; text-align: center; background-color: #f8d7da;">
+                            <h4 style="color: #721c24;">SDK Loading Failed</h4>
+                            <p style="color: #721c24;">Unable to load Agora SDK. Please check your internet connection and refresh the page.</p>
+                            <button onclick="location.reload()" style="padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px;">
+                                Refresh Page
+                            </button>
+                        </div>
+                    `;
+                }
+            };
+            document.head.appendChild(script);
+        }
+
+        // Check if Agora SDK loaded successfully
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                if (typeof AgoraRTC === 'undefined') {
+                    console.warn('Agora SDK not detected after page load, trying fallback...');
+                    loadAgoraFallback();
+                }
+            }, 2000);
+        });
+    </script>
 </head>
 <body>
     <div class="room-container">

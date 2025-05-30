@@ -43,6 +43,9 @@ services:
       - agora-network
     profiles:
       - production  # Only start with --profile production
+    environment:
+      - NGINX_HOST=${NGINX_HOST:-localhost}
+      - NGINX_PORT=${NGINX_PORT:-80}
 
 networks:
   agora-network:
