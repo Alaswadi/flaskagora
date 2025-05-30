@@ -607,14 +607,14 @@ Protocol: ${location.protocol}
 Domain: ${location.hostname}
 
 Requirements:
-- Use HTTPS (not HTTP) for camera access
 - Use a modern browser like Chrome, Firefox, or Safari
-- Ensure you're not in a restricted environment
+- For production: HTTPS is recommended for camera access
+- For development: HTTP on localhost is allowed
 
 Please try:
-1. Use HTTPS instead of HTTP
-2. Update your browser
-3. Try a different browser (Chrome recommended)`;
+1. Use a modern browser (Chrome recommended)
+2. For production: Enable HTTPS
+3. For development: Use localhost or 127.0.0.1`;
 
         console.error(errorMsg);
         throw new Error(errorMsg);
@@ -624,26 +624,29 @@ Please try:
         console.warn('Using legacy getUserMedia API - some features may not work');
     }
 
-    // Check if running on HTTPS or localhost (more permissive for cloud deployments)
-    const isSecure = location.protocol === 'https:' ||
-                     location.hostname === 'localhost' ||
-                     location.hostname === '127.0.0.1' ||
-                     location.hostname.includes('.app') ||  // Common cloud domains
-                     location.hostname.includes('.dev') ||
-                     location.hostname.includes('.io') ||
-                     location.hostname.includes('.com') ||
-                     location.hostname.includes('phishsimulator.com'); // Your Coolify domain
+    // Check security context - be more permissive for development
+    const isHTTPS = location.protocol === 'https:';
+    const isLocalhost = location.hostname === 'localhost' ||
+                       location.hostname === '127.0.0.1' ||
+                       location.hostname.startsWith('192.168.') ||
+                       location.hostname.startsWith('10.') ||
+                       location.hostname.startsWith('172.');
+
+    const isSecureContext = isHTTPS || isLocalhost;
 
     console.log('Security check:', {
         protocol: location.protocol,
         hostname: location.hostname,
-        isSecure: isSecure,
+        isHTTPS: isHTTPS,
+        isLocalhost: isLocalhost,
+        isSecureContext: isSecureContext,
         fullURL: location.href
     });
 
-    if (!isSecure) {
-        console.warn('Camera access may be restricted on non-HTTPS sites');
-        // For cloud deployments, we'll try anyway but warn the user
+    if (!isSecureContext) {
+        console.warn('⚠️ Camera access may be restricted on HTTP in production');
+        console.warn('💡 For full functionality, consider using HTTPS or localhost');
+        // We'll still try to proceed, but warn the user
     } else {
         console.log('✅ Secure context detected - camera access should work');
     }

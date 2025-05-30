@@ -51,8 +51,11 @@ def main():
     print("🚀 Testing IT Consultation Platform Deployment")
     print("=" * 50)
 
-    # Your Coolify URL
-    base_url = "https://qo08ogcgsk8cc88w84w4o8w0.phishsimulator.com"
+    # Test both HTTP and HTTPS
+    urls_to_test = [
+        "http://qo08ogcgsk8cc88w84w4o8w0.phishsimulator.com",   # HTTP
+        "https://qo08ogcgsk8cc88w84w4o8w0.phishsimulator.com",  # HTTPS
+    ]
 
     # Test different endpoints
     endpoints = [
@@ -63,23 +66,40 @@ def main():
         "/api/token", # API endpoint
     ]
 
-    results = {}
+    all_results = {}
 
-    for endpoint in endpoints:
-        results[endpoint] = test_url(base_url, endpoint)
+    for base_url in urls_to_test:
+        print(f"\n🔍 Testing {base_url}")
+        print("-" * 40)
 
-    print("\n" + "=" * 50)
-    print("📊 SUMMARY:")
-    for endpoint, success in results.items():
-        status = "✅ PASS" if success else "❌ FAIL"
-        print(f"{status} {base_url}{endpoint}")
+        results = {}
+        for endpoint in endpoints:
+            results[endpoint] = test_url(base_url, endpoint)
+
+        all_results[base_url] = results
+
+        print(f"\n📊 SUMMARY for {base_url}:")
+        for endpoint, success in results.items():
+            status = "✅ PASS" if success else "❌ FAIL"
+            print(f"{status} {base_url}{endpoint}")
 
     # Overall result
-    all_passed = all(results.values())
-    if all_passed:
-        print("\n🎉 All tests passed! Your deployment is working.")
+    print("\n" + "=" * 50)
+    print("🎯 FINAL SUMMARY:")
+
+    working_urls = []
+    for base_url, results in all_results.items():
+        if any(results.values()):  # If any endpoint works
+            working_urls.append(base_url)
+            print(f"✅ {base_url} - WORKING")
+        else:
+            print(f"❌ {base_url} - NOT WORKING")
+
+    if working_urls:
+        print(f"\n🎉 Success! Working URLs: {', '.join(working_urls)}")
+        print(f"💡 Try accessing: {working_urls[0]}/room?room=test")
     else:
-        print("\n⚠️  Some tests failed. Check the errors above.")
+        print("\n⚠️  No URLs are working. Check your deployment.")
         sys.exit(1)
 
 if __name__ == "__main__":

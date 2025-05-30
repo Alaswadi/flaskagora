@@ -33,46 +33,54 @@
             document.head.appendChild(script);
         }
 
-        // Check HTTPS requirement for camera access
-        function checkHTTPS() {
-            if (location.protocol !== 'https:' &&
-                location.hostname !== 'localhost' &&
-                location.hostname !== '127.0.0.1') {
+        // Check protocol and show appropriate warnings
+        function checkProtocol() {
+            const isHTTPS = location.protocol === 'https:';
+            const isLocalhost = location.hostname === 'localhost' ||
+                               location.hostname === '127.0.0.1' ||
+                               location.hostname.startsWith('192.168.');
 
-                console.error('HTTPS required for camera access in production');
+            console.log('Protocol check:', {
+                protocol: location.protocol,
+                hostname: location.hostname,
+                isHTTPS: isHTTPS,
+                isLocalhost: isLocalhost
+            });
 
-                // Show HTTPS warning
+            // Only show warning for HTTP in production (not localhost)
+            if (!isHTTPS && !isLocalhost) {
+                console.warn('Running on HTTP in production - camera access may be limited');
+
+                // Show HTTP warning (less severe than before)
                 const localVideoDiv = document.getElementById('local-video');
                 if (localVideoDiv) {
                     localVideoDiv.innerHTML = `
-                        <div style="padding: 20px; text-align: center; background-color: #fff3cd; border: 1px solid #ffeaa7;">
-                            <h4 style="color: #856404; margin-bottom: 10px;">🔒 HTTPS Required</h4>
-                            <p style="color: #856404; margin-bottom: 15px;">
-                                Camera and microphone access requires HTTPS in production.<br>
-                                Current URL: <strong>${location.href}</strong>
+                        <div style="padding: 15px; text-align: center; background-color: #fff3cd; border: 1px solid #ffeaa7; margin-bottom: 10px;">
+                            <h4 style="color: #856404; margin-bottom: 8px;">⚠️ HTTP Mode</h4>
+                            <p style="color: #856404; margin-bottom: 10px; font-size: 14px;">
+                                Running on HTTP. Camera access may be limited in some browsers.<br>
+                                <strong>Current URL:</strong> ${location.href}
                             </p>
                             <button onclick="location.href = location.href.replace('http:', 'https:')"
-                                    style="padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; margin-right: 10px;">
-                                Switch to HTTPS
+                                    style="padding: 6px 12px; background: #007bff; color: white; border: none; border-radius: 3px; margin-right: 8px; font-size: 12px;">
+                                Try HTTPS
                             </button>
-                            <button onclick="location.reload()"
-                                    style="padding: 8px 16px; background: #28a745; color: white; border: none; border-radius: 4px;">
-                                Refresh Page
+                            <button onclick="this.parentElement.style.display='none'"
+                                    style="padding: 6px 12px; background: #6c757d; color: white; border: none; border-radius: 3px; font-size: 12px;">
+                                Continue Anyway
                             </button>
                         </div>
                     `;
                 }
-                return false;
             }
-            return true;
+
+            return true; // Always return true to allow proceeding
         }
 
         // Check if Agora SDK loaded successfully
         window.addEventListener('load', function() {
-            // Check HTTPS first
-            if (!checkHTTPS()) {
-                return;
-            }
+            // Check protocol (but don't block execution)
+            checkProtocol();
 
             setTimeout(function() {
                 if (typeof AgoraRTC === 'undefined') {
