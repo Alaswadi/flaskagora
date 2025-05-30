@@ -33,8 +33,47 @@
             document.head.appendChild(script);
         }
 
+        // Check HTTPS requirement for camera access
+        function checkHTTPS() {
+            if (location.protocol !== 'https:' &&
+                location.hostname !== 'localhost' &&
+                location.hostname !== '127.0.0.1') {
+
+                console.error('HTTPS required for camera access in production');
+
+                // Show HTTPS warning
+                const localVideoDiv = document.getElementById('local-video');
+                if (localVideoDiv) {
+                    localVideoDiv.innerHTML = `
+                        <div style="padding: 20px; text-align: center; background-color: #fff3cd; border: 1px solid #ffeaa7;">
+                            <h4 style="color: #856404; margin-bottom: 10px;">🔒 HTTPS Required</h4>
+                            <p style="color: #856404; margin-bottom: 15px;">
+                                Camera and microphone access requires HTTPS in production.<br>
+                                Current URL: <strong>${location.href}</strong>
+                            </p>
+                            <button onclick="location.href = location.href.replace('http:', 'https:')"
+                                    style="padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; margin-right: 10px;">
+                                Switch to HTTPS
+                            </button>
+                            <button onclick="location.reload()"
+                                    style="padding: 8px 16px; background: #28a745; color: white; border: none; border-radius: 4px;">
+                                Refresh Page
+                            </button>
+                        </div>
+                    `;
+                }
+                return false;
+            }
+            return true;
+        }
+
         // Check if Agora SDK loaded successfully
         window.addEventListener('load', function() {
+            // Check HTTPS first
+            if (!checkHTTPS()) {
+                return;
+            }
+
             setTimeout(function() {
                 if (typeof AgoraRTC === 'undefined') {
                     console.warn('Agora SDK not detected after page load, trying fallback...');

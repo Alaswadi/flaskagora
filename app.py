@@ -56,6 +56,119 @@ def room():
     room_name = request.args.get('room', 'test-room')
     return render_template('room.html', room_name=room_name)
 
+@app.route('/debug')
+def debug():
+    """Debug page to check browser and deployment status"""
+    import platform
+    import sys
+
+    debug_info = {
+        'server': {
+            'python_version': sys.version,
+            'platform': platform.platform(),
+            'agora_config': {
+                'app_id': AGORA_CONFIG['APP_ID'],
+                'has_certificate': bool(AGORA_CONFIG['APP_CERTIFICATE']),
+                'token_expiration': AGORA_CONFIG['TOKEN_EXPIRATION_TIME']
+            }
+        },
+        'request': {
+            'url': request.url,
+            'protocol': request.scheme,
+            'host': request.host,
+            'user_agent': request.headers.get('User-Agent', 'Unknown'),
+            'is_secure': request.is_secure
+        }
+    }
+
+    return f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Debug Information</title>
+        <style>
+            body {{ font-family: Arial, sans-serif; margin: 20px; }}
+            .section {{ margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }}
+            .good {{ background-color: #d4edda; border-color: #c3e6cb; }}
+            .warning {{ background-color: #fff3cd; border-color: #ffeaa7; }}
+            .error {{ background-color: #f8d7da; border-color: #f5c6cb; }}
+            pre {{ background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }}
+        </style>
+    </head>
+    <body>
+        <h1>🔍 IT Consultation Platform - Debug Information</h1>
+
+        <div class="section {'good' if request.is_secure else 'error'}">
+            <h2>🔒 Security Status</h2>
+            <p><strong>Protocol:</strong> {request.scheme.upper()}</p>
+            <p><strong>Is Secure (HTTPS):</strong> {'✅ Yes' if request.is_secure else '❌ No - Camera access will fail!'}</p>
+            <p><strong>URL:</strong> {request.url}</p>
+            {'<p style="color: green;">✅ HTTPS is enabled - camera access should work</p>' if request.is_secure else '<p style="color: red;">❌ HTTPS required for camera access in production!</p>'}
+        </div>
+
+        <div class="section">
+            <h2>🌐 Browser Test</h2>
+            <p>Click the button below to test camera access:</p>
+            <button onclick="testCamera()" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                Test Camera Access
+            </button>
+            <div id="camera-result" style="margin-top: 10px;"></div>
+        </div>
+
+        <div class="section">
+            <h2>⚙️ Server Configuration</h2>
+            <pre>{debug_info}</pre>
+        </div>
+
+        <div class="section">
+            <h2>🚀 Quick Actions</h2>
+            <a href="/" style="display: inline-block; padding: 10px 20px; background: #28a745; color: white; text-decoration: none; border-radius: 5px; margin-right: 10px;">
+                Go to Homepage
+            </a>
+            <a href="/room?room=debug-test" style="display: inline-block; padding: 10px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 5px;">
+                Test Video Room
+            </a>
+        </div>
+
+        <script>
+            async function testCamera() {{
+                const resultDiv = document.getElementById('camera-result');
+                resultDiv.innerHTML = '<p>Testing camera access...</p>';
+
+                try {{
+                    console.log('Testing camera access...');
+                    console.log('Navigator.mediaDevices:', !!navigator.mediaDevices);
+                    console.log('Protocol:', location.protocol);
+
+                    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {{
+                        throw new Error('Browser does not support camera access API');
+                    }}
+
+                    const stream = await navigator.mediaDevices.getUserMedia({{
+                        video: true,
+                        audio: true
+                    }});
+
+                    // Stop the stream immediately
+                    stream.getTracks().forEach(track => track.stop());
+
+                    resultDiv.innerHTML = '<p style="color: green;">✅ Camera access successful! Video calls should work.</p>';
+
+                }} catch (error) {{
+                    console.error('Camera test failed:', error);
+                    resultDiv.innerHTML = `
+                        <p style="color: red;">❌ Camera access failed:</p>
+                        <p><strong>Error:</strong> ${{error.message}}</p>
+                        <p><strong>Protocol:</strong> ${{location.protocol}}</p>
+                        <p><strong>Browser:</strong> ${{navigator.userAgent}}</p>
+                    `;
+                }}
+            }}
+        </script>
+    </body>
+    </html>
+    """
+
 @app.route('/api/token')
 def get_token():
     """

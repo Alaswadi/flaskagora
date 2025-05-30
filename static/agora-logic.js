@@ -581,12 +581,47 @@ async function retryCamera() {
  */
 async function checkBrowserSupport() {
     console.log('Checking browser support...');
+    console.log('User Agent:', navigator.userAgent);
+    console.log('Location:', location.href);
+    console.log('Protocol:', location.protocol);
+    console.log('Navigator.mediaDevices:', !!navigator.mediaDevices);
+    console.log('Navigator.getUserMedia:', !!navigator.getUserMedia);
 
-    // Check if browser supports getUserMedia
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        const errorMsg = 'Browser does not support camera/microphone access. Please use a modern browser like Chrome, Firefox, or Safari.';
+    // Check for modern mediaDevices API
+    const hasModernAPI = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+
+    // Check for legacy getUserMedia API
+    const hasLegacyAPI = !!(navigator.getUserMedia ||
+                           navigator.webkitGetUserMedia ||
+                           navigator.mozGetUserMedia ||
+                           navigator.msGetUserMedia);
+
+    console.log('Modern API support:', hasModernAPI);
+    console.log('Legacy API support:', hasLegacyAPI);
+
+    if (!hasModernAPI && !hasLegacyAPI) {
+        const errorMsg = `Browser does not support camera/microphone access.
+
+Current browser: ${navigator.userAgent}
+Protocol: ${location.protocol}
+Domain: ${location.hostname}
+
+Requirements:
+- Use HTTPS (not HTTP) for camera access
+- Use a modern browser like Chrome, Firefox, or Safari
+- Ensure you're not in a restricted environment
+
+Please try:
+1. Use HTTPS instead of HTTP
+2. Update your browser
+3. Try a different browser (Chrome recommended)`;
+
         console.error(errorMsg);
         throw new Error(errorMsg);
+    }
+
+    if (!hasModernAPI) {
+        console.warn('Using legacy getUserMedia API - some features may not work');
     }
 
     // Check if running on HTTPS or localhost (more permissive for cloud deployments)
