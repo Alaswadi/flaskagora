@@ -631,11 +631,21 @@ Please try:
                      location.hostname.includes('.app') ||  // Common cloud domains
                      location.hostname.includes('.dev') ||
                      location.hostname.includes('.io') ||
-                     location.hostname.includes('.com');
+                     location.hostname.includes('.com') ||
+                     location.hostname.includes('phishsimulator.com'); // Your Coolify domain
+
+    console.log('Security check:', {
+        protocol: location.protocol,
+        hostname: location.hostname,
+        isSecure: isSecure,
+        fullURL: location.href
+    });
 
     if (!isSecure) {
         console.warn('Camera access may be restricted on non-HTTPS sites');
         // For cloud deployments, we'll try anyway but warn the user
+    } else {
+        console.log('✅ Secure context detected - camera access should work');
     }
 
     console.log('Security context:', {

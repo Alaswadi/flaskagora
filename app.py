@@ -1,10 +1,21 @@
 from flask import Flask, render_template, request, jsonify
+from werkzeug.middleware.proxy_fix import ProxyFix
 import time
 import random
 import string
 import os
 
 app = Flask(__name__)
+
+# Configure ProxyFix for Coolify/Traefik proxy
+# This tells Flask to trust proxy headers for HTTPS detection
+app.wsgi_app = ProxyFix(
+    app.wsgi_app,
+    x_for=1,      # Trust X-Forwarded-For
+    x_proto=1,    # Trust X-Forwarded-Proto (for HTTPS detection)
+    x_host=1,     # Trust X-Forwarded-Host
+    x_prefix=1    # Trust X-Forwarded-Prefix
+)
 
 # Agora.io Configuration
 def load_agora_config():
@@ -77,7 +88,19 @@ def debug():
             'protocol': request.scheme,
             'host': request.host,
             'user_agent': request.headers.get('User-Agent', 'Unknown'),
-            'is_secure': request.is_secure
+            'is_secure': request.is_secure,
+            'proxy_headers': {
+                'X-Forwarded-Proto': request.headers.get('X-Forwarded-Proto'),
+                'X-Forwarded-Host': request.headers.get('X-Forwarded-Host'),
+                'X-Forwarded-For': request.headers.get('X-Forwarded-For'),
+                'X-Real-IP': request.headers.get('X-Real-IP'),
+                'Host': request.headers.get('Host')
+            }
+        },
+        'coolify_env': {
+            'COOLIFY_URL': os.getenv('COOLIFY_URL'),
+            'COOLIFY_FQDN': os.getenv('COOLIFY_FQDN'),
+            'FLASK_ENV': os.getenv('FLASK_ENV')
         }
     }
 
